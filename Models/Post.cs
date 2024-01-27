@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ByteInsights.Models
 {
@@ -20,8 +21,23 @@ namespace ByteInsights.Models
         [Required]
         public string Content { get; set; }
 
-
+        [DataType(DataType.Date)]
+        [Display(Name = "Created Date")]
         public DateTime Created { get; set; }
+
+        [DataType(DataType.Date)]
+        [Display(Name = "Updated Date")]
         public DateTime? Updated { get; set; }
+
+        public bool IsReady { get; set; }
+
+        public string Slug { get; set; }
+
+        public byte[] ImageData { get; set; }
+
+        public string ContentType { get; set; }
+
+        [NotMapped]
+        public IFormFile Image {  get; set; }
     }
 }
