@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Microsoft.AspNetCore.Identity;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -47,5 +48,22 @@ namespace ByteInsights.Models
 
         [NotMapped]   // Not stored as a column in the db
         public IFormFile Image { get; set; }
+
+        
+        // Navigation Property
+        public virtual IdentityUser Author { get; set; }
+        public virtual ICollection<Post> Posts {  get; set; } = new HashSet<Post>();
     }
 }
+
+/*  Relationships are established using the virtual properties. They are done such that 
+ *  one model might be the parent of another and one model might be the child of the first.
+ *  For example, the Blog and the Post are related to each other. The Blog is the parent of the Post
+ *  and therefore as a Blog I can have a collection of Posts or a collection of children. As a child in the
+ *  Post class, I am aware of my parent via the Foreign key and I can also navigate to my parent via the
+ *  navigation property. 
+ *  
+ *  As a quick review, in coding relationship between 2 classes usually involves the parent class 
+ *  recognising the fact that it could have a collection of its children and then any class that's acting
+ *  in the capacity of it's child will have a reference to its parent via the foreign key and a virtual property
+ */
