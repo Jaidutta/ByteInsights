@@ -9,7 +9,7 @@ namespace ByteInsights.Models
         public int Id { get; set; }
         public int PostId { get; set; }
 
-        public string AuthorId { get; set; }
+        public string BlogUserId { get; set; }
 
         public string ModeratorId {  get; set; }
 
@@ -42,8 +42,21 @@ namespace ByteInsights.Models
 
         public virtual Post Post { get; set; }
 
-        public virtual BlogUser Author { get; set; }
+        public virtual BlogUser BlogUser { get; set; }
 
         public virtual BlogUser Moderator { get; set; }
+
+        /* We are more used to seeing public virtual BlogUser BlogUser { get; set; }
+         * but public virtual BlogUser Moderator { get; set; } is also acceptable
+         * BlogUser is the type and Moderator is the navigation property
+         * The name Moderator should match the ModeratorId
+         * public string ModeratorId {  get; set; }
+         * 
+         * As long as public string ModeratorId {  get; set; }
+         * matches public virtual BlogUser Moderator { get; set; }
+         * we are good to go. That is Moderator and the property name ModeratorId
+         */
+
+
     }
 }
