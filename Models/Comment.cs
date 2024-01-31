@@ -9,18 +9,18 @@ namespace ByteInsights.Models
         public int Id { get; set; }
         public int PostId { get; set; }
 
-        public string BlogUserId { get; set; }
+        public string? BlogUserId { get; set; }
 
-        public string ModeratorId {  get; set; }
+        public string? ModeratorId {  get; set; }
 
         [Required]
         [StringLength(500, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long", MinimumLength = 2)]
         [Display(Name = "Comment")]
-        public string Body { get; set; }
+        public string? Body { get; set; }
 
         [DataType(DataType.Date)]
         [Display(Name = "Created Date")]
-        public DateTime Created { get; set; }
+        public DateTime? Created { get; set; }
 
         [DataType(DataType.Date)]
         [Display(Name = "Updated Date")]
@@ -34,17 +34,17 @@ namespace ByteInsights.Models
         [Required]
         [StringLength(500, ErrorMessage = "The {0} must be at least {2} and at most {1} characters long", MinimumLength = 2)]
         [Display(Name = "Moderated Comment")]
-        public string ModeratedBody { get; set; }
+        public string? ModeratedBody { get; set; }
 
-        public ModerationType ModerationType { get; set; }
+        public ModerationType? ModerationType { get; set; }
 
         // Navigation properties
 
-        public virtual Post Post { get; set; }
+        public virtual Post? Post { get; set; }
 
-        public virtual BlogUser BlogUser { get; set; }
+        public virtual BlogUser? BlogUser { get; set; }
 
-        public virtual BlogUser Moderator { get; set; }
+        public virtual BlogUser? Moderator { get; set; }
 
         /* We are more used to seeing public virtual BlogUser BlogUser { get; set; }
          * but public virtual BlogUser Moderator { get; set; } is also acceptable

@@ -59,12 +59,16 @@ namespace ByteInsights.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Name,Description,Image")] Blog blog)
         {
+
             if (ModelState.IsValid)
             {
+
                 _context.Add(blog);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            
             ViewData["BlogUserId"] = new SelectList(_context.Users, "Id", "Id", blog.BlogUserId);
             return View(blog);
         }
@@ -82,7 +86,7 @@ namespace ByteInsights.Controllers
             {
                 return NotFound();
             }
-            ViewData["BlogUserId"] = new SelectList(_context.Users, "Id", "Id", blog.BlogUserId);
+            
             return View(blog);
         }
 
@@ -91,7 +95,7 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogUserId,Name,Description,Created,Updated,ImageData,ContentType")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Image")] Blog blog)
         {
             if (id != blog.Id)
             {
