@@ -48,8 +48,12 @@ namespace ByteInsights.Controllers
 
         // GET: Posts/Create
         public IActionResult Create()
-        {
-            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description");
+        {   
+            /* SelectList --> 1st parameter all the Blogs
+                          --> 2nd parameter gets sent to the POST
+                          --> 3rd parameter is what is shown to the user
+            */ 
+            ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Name");
             ViewData["BlogUserId"] = new SelectList(_context.Users, "Id", "Id");
             return View();
         }
@@ -62,7 +66,8 @@ namespace ByteInsights.Controllers
         public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post)
         {
             if (ModelState.IsValid)
-            {
+            {   
+                post.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
