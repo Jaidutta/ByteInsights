@@ -1,7 +1,10 @@
 using ByteInsights.Data;
+using ByteInsights.Helpers;
 using ByteInsights.Models;
+using ByteInsights.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,7 +36,25 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddRazorPages();
 
+// Register my custom DataService class
+builder.Services.AddScoped<DataService>();
+
+
+
 var app = builder.Build();
+
+// Resolve DataService and run initialization ManageDataAsync()
+using (var scope = app.Services.CreateScope())
+{
+    //DataService
+    var serviceProvider = scope.ServiceProvider;
+    var dataService = serviceProvider.GetRequiredService<DataService>();
+    await dataService.ManageDataAsync();
+    await DataHelper.ManageDataAsync(scope.ServiceProvider);
+}
+
+
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
