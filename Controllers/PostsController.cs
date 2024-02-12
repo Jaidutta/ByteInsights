@@ -96,6 +96,20 @@ namespace ByteInsights.Controllers
 
                 _context.Add(post);
                 await _context.SaveChangesAsync();
+
+                // How do we loop over the incoming list of string ? 
+                foreach(var tagText in  tagValues)
+                {
+                    _context.Add(new Tag()
+                    {
+                        PostId = post.Id,
+                        BlogUserId = post.BlogUserId,
+                        Text = tagText
+                    });
+
+                }
+
+                await _context.SaveChangesAsync(); // saves all the tags as well
                 return RedirectToAction(nameof(Index));
             }
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", post.BlogId);
