@@ -30,12 +30,12 @@ namespace ByteInsights.Services
             await _dbContext.Database.MigrateAsync();
 
 
-            // Task 1: Seed a few roles into the System
+            // Task 1: Seed a few roles into the System - programmatically add a few roles without using the UI
 
             await SeedRolesAsync();
 
 
-            // Task 2: Seed a few users into the System
+            // Task 2: Seed a few users into the System - programmatically add a few roles without using the UI
             await SeedUsersAsync();
         }
 
@@ -75,6 +75,7 @@ namespace ByteInsights.Services
                 UserName = "dutta_joy@hotmail.com",
                 FirstName = "Joy",
                 LastName = "Dutta", 
+                DisplayName = "Admin",
                 PhoneNumber = "+447828101808",
                 EmailConfirmed = true,
 
@@ -96,6 +97,7 @@ namespace ByteInsights.Services
                 UserName = "developmentjai@gmail.com",
                 FirstName = "Joy",
                 LastName = "Dutta",
+                DisplayName = "Moderator",
                 PhoneNumber = "+447828101808",
                 EmailConfirmed = true,
 

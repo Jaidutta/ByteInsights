@@ -2,6 +2,7 @@ using ByteInsights.Data;
 using ByteInsights.Helpers;
 using ByteInsights.Models;
 using ByteInsights.Services;
+using ByteInsights.ViewModels;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -10,8 +11,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+
 /* builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+ Changes the code  above to use Npgsql below
 */
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -40,6 +45,16 @@ builder.Services.AddRazorPages();
 builder.Services.AddScoped<DataService>();
 
 
+// Registr a pre-configured instance of the MailSettings Class
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+builder.Services.AddScoped<IBlogEmailSender, EmailService>();
+
+// Custom ImageService Class
+builder.Services.AddScoped<IImageService, BasicImageService>();
+
+
+// Custom SlugService Class
+builder.Services.AddScoped<ISlugService, BasicSlugService>();
 
 var app = builder.Build();
 
@@ -50,7 +65,7 @@ using (var scope = app.Services.CreateScope())
     var serviceProvider = scope.ServiceProvider;
     var dataService = serviceProvider.GetRequiredService<DataService>();
     await dataService.ManageDataAsync();
-    await DataHelper.ManageDataAsync(scope.ServiceProvider);
+   
 }
 
 

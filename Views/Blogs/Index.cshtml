@@ -1,4 +1,12 @@
-﻿@model IEnumerable<ByteInsights.Models.Blog>
+﻿@* Inject an instance into a view 
+   In the controller we inject a service through Constructor injection
+   while in the View we do so using @inject 
+*@
+
+@using ByteInsights.Services
+@inject IImageService imageService
+
+@model IEnumerable<ByteInsights.Models.Blog>
 
 @{
     ViewData["Title"] = "Index";
@@ -27,12 +35,7 @@
             <th>
                 @Html.DisplayNameFor(model => model.ImageData)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ContentType)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.BlogUser)
-            </th>
+            
             <th></th>
         </tr>
     </thead>
@@ -52,13 +55,8 @@
                 @Html.DisplayFor(modelItem => blog.Updated)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => blog.ImageData)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => blog.ContentType)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => blog.BlogUser.Id)
+                <img classs="img-fluid" width="200px" src="@imageService.DecodeImage(blog.ImageData, blog.ContentType)"/> 
+               
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@blog.Id">Edit</a> |

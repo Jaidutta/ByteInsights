@@ -41,14 +41,14 @@
                 <select asp-for="ReadyStatus" asp-items="@Html.GetEnumSelectList<ReadyStatus>()" class="form-control"></select>
                 <span asp-validation-for="ReadyStatus" class="text-danger"></span>
             </div>
-            d
+            
             <div class="form-group">
                 <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" type="file" class="form-control" />
+                <input name="NewImage" type="file" class="form-control" />
                 <span asp-validation-for="Image" class="text-danger"></span>
             </div>
             
-            <div class="form-group">
+            <div class="form-group my-2">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
@@ -60,5 +60,12 @@
 </div>
 
 @section Scripts {
+    <script>
+        //Default font size but not for placeholder...
+        $('#Content').summernote({
+            placeholder: "Post Content"
+        });
+    </script>
+
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }

@@ -7,16 +7,21 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ByteInsights.Data;
 using ByteInsights.Models;
+using ByteInsights.Services;
 
 namespace ByteInsights.Controllers
 {
     public class PostsController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly ISlugService _slugService;
+        private readonly IImageService _imageService;
 
-        public PostsController(ApplicationDbContext context)
+        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService = null)
         {
             _context = context;
+            _slugService = slugService;
+            _imageService = imageService;
         }
 
         // GET: Posts
@@ -63,11 +68,32 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post)
+        public async Task<IActionResult> Create([Bind("BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post, List<string> tagValues)
         {
             if (ModelState.IsValid)
             {   
                 post.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
+                // use the image service to store the user specified image
+
+                post.ImageData = await _imageService.EncodeImageAsync(post.Image);
+                post.ContentType = _imageService.ContentType(post.Image);
+
+
+                // create the slug and determine if the slug is unique
+                var slug = _slugService.UrlFriendly(post.Title);
+
+                if (!_slugService.isUnique(slug))
+                {
+                    // Add a model state error and return the user back to the Create View
+                    ModelState.AddModelError("Title", "The title you provided cannot be used as it results in a duplicate slug.");
+                    ViewData["TagValues"] = string.Join(",", tagValues);
+                    return View(post);
+                }
+                
+                post.Slug = slug;
+                    
+
                 _context.Add(post);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -100,7 +126,7 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus,Image")] Post post)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus")] Post post, IFormFile newImage)
         {
             if (id != post.Id)
             {
@@ -110,8 +136,23 @@ namespace ByteInsights.Controllers
             if (ModelState.IsValid)
             {
                 try
-                {   post.Updated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
-                    _context.Update(post);
+                {   
+                    post.Updated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+
+                    var newPost = await _context.Posts.FindAsync(post.Id);
+                    newPost.Title = post.Title;
+                    newPost.Abstract = post.Abstract;
+                    newPost.Content = post.Content;
+                    newPost.ReadyStatus = post.ReadyStatus;
+
+                    if(newImage is not null)
+                    {
+                        post.ImageData = await _imageService.EncodeImageAsync(newImage);
+                        post.ContentType = _imageService.ContentType(newImage);
+
+                    }
+
+                    
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

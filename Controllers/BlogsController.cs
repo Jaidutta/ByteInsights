@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ByteInsights.Data;
 using ByteInsights.Models;
+using ByteInsights.Services;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ByteInsights.Controllers
 {
@@ -14,9 +17,15 @@ namespace ByteInsights.Controllers
     {
         private readonly ApplicationDbContext _context;
 
-        public BlogsController(ApplicationDbContext context)
+        private readonly IImageService _imageService;
+
+        private readonly UserManager<BlogUser> _userManager;
+
+        public BlogsController(ApplicationDbContext context, IImageService imageService, UserManager<BlogUser> userManager)
         {
             _context = context;
+            _imageService = imageService;
+            _userManager = userManager;
         }
 
         // GET: Blogs
@@ -46,6 +55,7 @@ namespace ByteInsights.Controllers
         }
 
         // GET: Blogs/Create
+        [Authorize]
         public IActionResult Create()
         {
             
@@ -62,6 +72,10 @@ namespace ByteInsights.Controllers
 
             if (ModelState.IsValid)
             {
+                blog.Created = DateTime.UtcNow;
+                blog.BlogUserId = _userManager.GetUserId(User);
+                blog.ImageData = await _imageService.EncodeImageAsync(blog.Image);
+                blog.ContentType = _imageService.ContentType(blog.Image);
 
                 _context.Add(blog);
                 await _context.SaveChangesAsync();
@@ -95,7 +109,7 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Image")] Blog blog)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Image")] Blog blog, IFormFile newImage)
         {
             if (id != blog.Id)
             {
@@ -106,7 +120,27 @@ namespace ByteInsights.Controllers
             {
                 try
                 {
-                    _context.Update(blog);
+                    var newBlog = await _context.Blogs.FindAsync(blog.Id);
+                    newBlog.Updated = DateTime.UtcNow;
+
+                    if (newBlog.Name != blog.Name)
+                    {
+                        newBlog.Name = blog.Name;
+                        
+                    }
+
+                    if (newBlog.Description != blog.Description)
+                    {
+                        newBlog.Description = blog.Description;
+                        
+                    }
+
+                    if(newImage is not null)
+                    {
+                        newBlog.ImageData = await _imageService.EncodeImageAsync(newImage);
+                    }
+
+                    
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

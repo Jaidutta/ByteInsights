@@ -1,4 +1,6 @@
 ﻿using ByteInsights.Models;
+using ByteInsights.Services;
+using ByteInsights.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -8,9 +10,12 @@ namespace ByteInsights.Controllers
     {
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IBlogEmailSender _emailSender;
+
+        public HomeController(ILogger<HomeController> logger, IBlogEmailSender emailSender)
         {
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -23,12 +28,25 @@ namespace ByteInsights.Controllers
             return View();
 
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Contact(ContactMe model)
+        {
+            // This is where we are going to be emailing 
+            model.Message = $"{model.Message} <hr/> Phone: {model.Phone}";
+
+            await _emailSender.SendContactEmailAsync(model.Email, model.Name, model.Subject, model.Message);
+
+            return RedirectToAction("Index");
+        }
+
         public IActionResult About()
         {
             return View();
         }
 
-            [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
