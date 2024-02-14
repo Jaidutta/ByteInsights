@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using ByteInsights.Data;
 using ByteInsights.Models;
 using ByteInsights.Services;
+using Microsoft.AspNetCore.Identity;
 
 namespace ByteInsights.Controllers
 {
@@ -16,12 +17,14 @@ namespace ByteInsights.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ISlugService _slugService;
         private readonly IImageService _imageService;
+        private readonly UserManager<BlogUser> _userManager;
 
-        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService = null)
+        public PostsController(ApplicationDbContext context, ISlugService slugService, IImageService imageService, UserManager<BlogUser> userManager)
         {
             _context = context;
             _slugService = slugService;
             _imageService = imageService;
+            _userManager = userManager;
         }
 
         // GET: Posts
@@ -42,6 +45,7 @@ namespace ByteInsights.Controllers
             var post = await _context.Posts
                 .Include(p => p.Blog)
                 .Include(p => p.BlogUser)
+                .Include(p => p.Tags)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (post == null)
             {
@@ -74,6 +78,9 @@ namespace ByteInsights.Controllers
             {   
                 post.Created = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
 
+                var authorId = _userManager.GetUserId(User);
+                post.BlogUserId = authorId;
+
                 // use the image service to store the user specified image
 
                 post.ImageData = await _imageService.EncodeImageAsync(post.Image);
@@ -103,7 +110,7 @@ namespace ByteInsights.Controllers
                     _context.Add(new Tag()
                     {
                         PostId = post.Id,
-                        BlogUserId = post.BlogUserId,
+                        BlogUserId = authorId,
                         Text = tagText
                     });
 
@@ -125,13 +132,13 @@ namespace ByteInsights.Controllers
                 return NotFound();
             }
 
-            var post = await _context.Posts.FindAsync(id);
+            var post = await _context.Posts.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Id == id);
             if (post == null)
             {
                 return NotFound();
             }
             ViewData["BlogId"] = new SelectList(_context.Blogs, "Id", "Description", post.BlogId);
-            
+            ViewData["TagValues"] = string.Join(",", post.Tags.Select(t => t.Text));
             return View(post);
         }
 
@@ -140,7 +147,7 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus")] Post post, IFormFile newImage)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,BlogId,Title,Abstract,Content,ReadyStatus")] Post post, IFormFile? newImage, List<string>? tagValues)
         {
             if (id != post.Id)
             {
@@ -150,10 +157,14 @@ namespace ByteInsights.Controllers
             if (ModelState.IsValid)
             {
                 try
-                {   
-                    post.Updated = DateTime.SpecifyKind(DateTime.Now, DateTimeKind.Utc);
+                {
+                    
 
-                    var newPost = await _context.Posts.FindAsync(post.Id);
+                    var newPost = await _context.Posts
+                                                .Include(p => p.Tags)
+                                                .FirstOrDefaultAsync(p => p.Id == post.Id);
+
+                    newPost.Updated = DateTime.UtcNow;
                     newPost.Title = post.Title;
                     newPost.Abstract = post.Abstract;
                     newPost.Content = post.Content;
@@ -161,12 +172,27 @@ namespace ByteInsights.Controllers
 
                     if(newImage is not null)
                     {
-                        post.ImageData = await _imageService.EncodeImageAsync(newImage);
-                        post.ContentType = _imageService.ContentType(newImage);
+                        newPost.ImageData = await _imageService.EncodeImageAsync(newImage);
+                        newPost.ContentType = _imageService.ContentType(newImage);
 
                     }
 
+                    // Remove all tags previously associated with this Post
+                     _context.Tags.RemoveRange(newPost.Tags);
+
                     
+                    // Add in the new Tags from the Edit form
+                    foreach(var tagText in tagValues)
+                    {
+                        _context.Add(new Tag()
+                        {
+                            PostId = post.Id,
+                            BlogUserId = newPost.BlogUserId,
+                            Text = tagText
+                        });
+                    }
+
+
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)

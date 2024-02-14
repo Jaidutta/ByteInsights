@@ -46,6 +46,7 @@
                     <input asp-for="Image" type="file" class="form-control" />
                     <span asp-validation-for="Image" class="text-danger"></span>
                 </div>
+
                 <!-- Tags -->
                 <div class="form-group">
                     <div class="row">
@@ -65,10 +66,10 @@
 
                             <div class="row">
                                 <div class="col">
-                                    <button onclick="AddTag()" name="Add" type="button" class="btn btn-dark btn-sm w-100">Add</button>
+                                    <button onclick="AddTag()" name="Add" type="button" class="btn btn-dark btn-stylish w-100">Add</button>
                                 </div>
                                 <div class="col">
-                                    <button onclick="DeleteTag()" name="Delete" type="button" class="btn btn-dark btn-sm w-100">Delete</button>
+                                    <button onclick="DeleteTag()" name="Delete" type="button" class="btn btn-dark btn-stylish w-100">Delete</button>
                                 </div>
                             </div>
 
@@ -79,7 +80,7 @@
                     </div>
                 </div>
                 <div class="form-group my-2">
-                    <button type="submit" value="Create" class="btn btn-dark btn-sm w-100">Submit</button>
+                    <button type="submit" value="Create" class="btn btn-dark btn-stylish w-100">Submit</button>
                 </div>
             </form>
         </div>
@@ -92,8 +93,9 @@
 
 
 @section Scripts{
-
+    <script src="~/js/custom.js"></script>
     <script>
+
         //Default font size but not for placeholder...
         $('#Content').summernote({
             placeholder: "Post Content"
