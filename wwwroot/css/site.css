@@ -6,3 +6,9 @@ button.btn-stylish {
     line-height: .5;
     border-radius: 10px;
 }
+
+
+div.swal2-container.swal2-center.swal2-backdrop-show > div {
+    outline: 4px solid black;
+    border: 2px solid orange;
+}

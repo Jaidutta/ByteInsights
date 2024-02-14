@@ -4,12 +4,14 @@ function AddTag() {
     // Get Reference to the TagEntry input element -- where the user types in the tags
     var tagEntry = document.getElementById("TagEntry");
 
-    // Lets use the new search function to help detect an error state
+    // Lets use the new search function to help detect an error state: search string == empty
+    // search string is equal to duplicate
+
     let searchResult = search(tagEntry.value);
     if (searchResult != null) {
         // Trigger sweet alert for whatever condition is contained in the search results var
         swalWithDarkButton.fire({
-            html: `<span class='font-weight-bolder'>${searchResult.toUpperCase()}</span>`
+            html: `<span class='fw-bolder fs-4-'>${searchResult.toUpperCase()}</span>`
         });
     }
     else {
@@ -43,7 +45,7 @@ function DeleteTag() {
 
     if (tagList.selectedIndex == -1) {
         swalWithDarkButton.fire({
-            html: "<span class='font-weight-bolder'>CHOOSE A TAG BEFORE DELETING</span>"
+            html: "<span class='fw-bolder fs-4'>CHOOSE A TAG BEFORE DELETING</span>"
         });
         return true;
     }
@@ -94,8 +96,8 @@ function ReplaceTag(tag, index) {
 }
 
 
-// The Search function will detect either an empty of a duplicate Tag
-// and return and error string if an error is detected
+// The Search function will detect either an empty or a duplicate Tag
+// and return an error string if an error is detected
 
 function search(str) {
     if (str === "") {
@@ -116,9 +118,11 @@ function search(str) {
 
 const swalWithDarkButton = Swal.mixin({
     customClass: {
-        confirmButton: 'btn btn-danger btn-sm w-100 btn-outline-dark'
+        confirmButton: 'btn btn-danger btn-stylish w-100 btn-outline-dark'
     },
     imageUrl: '/images/HoldOnAlert.jpg',
     timer: 3000,
-    buttonsStyling: false
+    buttonsStyling: false,
+    imageHeight: 300,
+    imageWidth: 300,
 });
