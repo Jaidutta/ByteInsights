@@ -116,11 +116,19 @@ namespace ByteInsights.Controllers
                 }
 
                 // detect incoming duplicate slugs
-                if (!_slugService.isUnique(slug))
+                else if (!_slugService.isUnique(slug))
                 {
                     validationError = true;
                     ModelState.AddModelError("Title", "The title you provided cannot be used as it results in a duplicate slug.");
                     
+                }
+
+                // An example to handle custom error
+                else if(slug.Contains("test"))
+                {
+                    validationError = true;
+                    ModelState.AddModelError("Title", "Uh oh, are you testing again?");
+                    ModelState.AddModelError("Title", "The title cannot contain the word 'test'");
                 }
 
                 if(validationError)
