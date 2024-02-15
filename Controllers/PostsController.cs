@@ -90,16 +90,46 @@ namespace ByteInsights.Controllers
                 // create the slug and determine if the slug is unique
                 var slug = _slugService.UrlFriendly(post.Title);
 
+                //if (!_slugService.isUnique(slug))
+                //{
+                //    // Add a model state error and return the user back to the Create View
+                //    ModelState.AddModelError("Title", "The title you provided cannot be used as it results in an empty slug.");
+                //    ViewData["TagValues"] = string.Join(",", tagValues);
+                //    return View(post);
+                //}
+
+                //post.Slug = slug;
+
+
+                // create a variable to store whether an error has occured 
+                var validationError = false;
+
+                
+
+
+
+                if (string.IsNullOrEmpty(slug))
+                {
+                    validationError = true;
+                    ModelState.AddModelError("", "The title you provided cannot be used as it results in a duplicate slug.");
+                   
+                }
+
+                // detect incoming duplicate slugs
                 if (!_slugService.isUnique(slug))
                 {
-                    // Add a model state error and return the user back to the Create View
+                    validationError = true;
                     ModelState.AddModelError("Title", "The title you provided cannot be used as it results in a duplicate slug.");
+                    
+                }
+
+                if(validationError)
+                {
                     ViewData["TagValues"] = string.Join(",", tagValues);
                     return View(post);
                 }
-                
+
                 post.Slug = slug;
-                    
 
                 _context.Add(post);
                 await _context.SaveChangesAsync();
@@ -169,6 +199,23 @@ namespace ByteInsights.Controllers
                     newPost.Abstract = post.Abstract;
                     newPost.Content = post.Content;
                     newPost.ReadyStatus = post.ReadyStatus;
+
+                    var newSlug = _slugService.UrlFriendly(post.Title);
+
+                    if(newSlug != newPost.Slug)
+                    {
+                        if(_slugService.isUnique(newSlug)) {
+                            newPost.Title = post.Title;
+                            newPost.Slug = newSlug;
+                        } 
+                        else
+                        {   
+                            ModelState.AddModelError("Title","This Title cannot be used it results in a duplicate slug");
+                            // if we detect a ModelError,
+                            // then we will have to manually force the user to go back to the View they came from
+                            return View(post);
+                        }
+                    }
 
                     if(newImage is not null)
                     {
