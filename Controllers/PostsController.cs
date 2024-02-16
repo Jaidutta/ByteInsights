@@ -9,6 +9,8 @@ using ByteInsights.Data;
 using ByteInsights.Models;
 using ByteInsights.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Hosting;
+using ByteInsights.ViewModels;
 
 namespace ByteInsights.Controllers
 {
@@ -34,6 +36,7 @@ namespace ByteInsights.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
+        /*
         // GET: Posts/Details/5
         public async Task<IActionResult> Details(int? id)
         {
@@ -42,7 +45,7 @@ namespace ByteInsights.Controllers
                 return NotFound();
             }
 
-            var post = await _context.Posts
+           // var post = await _context.Posts
                 .Include(p => p.Blog)
                 .Include(p => p.BlogUser)
                 .Include(p => p.Tags)
@@ -54,6 +57,45 @@ namespace ByteInsights.Controllers
 
             return View(post);
         }
+
+        */
+
+        // GET: Posts/Details/5
+        public async Task<IActionResult> Details(string slug)
+        {
+            if (string.IsNullOrEmpty(slug))
+            {
+                return NotFound();
+            }
+
+            var post = await _context.Posts
+                .Include(p => p.BlogUser) // This BlogUser is the Author of the Posts
+                .Include(p => p.Tags)
+                .Include(p => p.Comments)
+                .ThenInclude(c => c.BlogUser)
+                .Include(p => p.Comments)
+                .ThenInclude(c => c.Moderator)
+                .FirstOrDefaultAsync(m => m.Slug == slug);
+            if (post == null)
+            {
+                return NotFound();
+            }
+
+            var dataVM = new PostDetailViewModel()
+            {
+                Post = post,
+                Tags = _context.Tags
+                       .Select(t => t.Text.ToLower())
+                       .Distinct().ToList()
+            };
+
+            ViewData["HeaderImage"] = _imageService.DecodeImage(post.ImageData, post.ContentType);
+            ViewData["MainText"] = post.Title;
+            ViewData["SubText"] = post.Abstract;
+
+            return View(dataVM);
+        }
+
 
         // GET: Posts/Create
         public IActionResult Create()
@@ -163,14 +205,14 @@ namespace ByteInsights.Controllers
         }
 
         // GET: Posts/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        public async Task<IActionResult> Edit(string slug)
         {
-            if (id == null || _context.Posts == null)
+            if (slug == null )
             {
                 return NotFound();
             }
 
-            var post = await _context.Posts.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Id == id);
+            var post = await _context.Posts.Include(p => p.Tags).FirstOrDefaultAsync(p => p.Slug == slug);
             if (post == null)
             {
                 return NotFound();
@@ -269,9 +311,9 @@ namespace ByteInsights.Controllers
         }
 
         // GET: Posts/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        public async Task<IActionResult> Delete(string slug)
         {
-            if (id == null || _context.Posts == null)
+            if (slug == null)
             {
                 return NotFound();
             }
@@ -279,7 +321,7 @@ namespace ByteInsights.Controllers
             var post = await _context.Posts
                 .Include(p => p.Blog)
                 .Include(p => p.BlogUser)
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Slug == slug);
             if (post == null)
             {
                 return NotFound();

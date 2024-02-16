@@ -1,4 +1,6 @@
-﻿@model ByteInsights.Models.Post
+﻿
+@using ByteInsights.ViewModels
+@model PostDetailViewModel
 
 @{
     ViewData["Title"] = "Details";
@@ -12,7 +14,7 @@
                 @* Converts html code to presentable content
                     In other words it will allow the html code to render
                 *@
-                @Html.Raw(Model.Content)
+                @Html.Raw(Model.Post.Content)
             </div>
             
         </div>
@@ -30,7 +32,8 @@
         <div class="col text-center">
             @foreach (var tag in Model.Tags)
             {
-                <a class="btn btn-sm btn-secondary" asp-action="TagIndex" asp-route-tag="@tag.Text?.ToLower()">#@tag.Text</a>
+                <a asp-action="TagIndex" asp-route-tag="@tag" class="mb-1 btn btn-sm btn-warning btn-outline-dark">#@tag</a>
+            
             }
         </div>
     </div>
