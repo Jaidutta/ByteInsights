@@ -1,6 +1,14 @@
-﻿@using ByteInsights.Models
+﻿@* @using ByteInsights.Models *@
 
-@model IEnumerable<Blog>
+@*   @model IEnumerable<Blog>   We are not using List anymore*@
+@*
+    Packages:
+1) X.PagedList  2)  X.PagedList.Mvc.Core 3)  X.PagedList.Web.Common
+*@
+@using X.PagedList      @* X.PagedList package *@
+@using X.PagedList.Mvc.Core
+@using X.PagedList.Web.Common
+@model IPagedList<Blog>
 
 @{
     ViewData["Title"] = "Home Page";
@@ -28,5 +36,23 @@
             <!-- Pager-->
             <div class="d-flex justify-content-end mb-4"><a class="btn btn-primary text-uppercase" href="#!">Older Posts →</a></div>
         </div>
+    </div>
+</div>
+
+@* Adding Page Controls Here *@
+
+<div class="row">
+    <div class="col h3">
+        @* To display page X of Y *@
+        Page @(Model.PageCount < Model.PageNumber ? 0 : Model.PageNumber) of @Model.PageCount
+    </div>
+</div>
+
+<div class="row">
+    <div class="col">
+         @* When we click on the Url, it is going to take us to that action
+         but we are going to pass along the page number *@
+         @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page }), new PagedListRenderOptions {LiElementClasses = new string[] { "page-item" }, PageClasses = new string[] { "page-link" }
+        })
     </div>
 </div>

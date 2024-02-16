@@ -5,6 +5,7 @@ using ByteInsights.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
+using X.PagedList;
 
 namespace ByteInsights.Controllers
 {
@@ -23,10 +24,28 @@ namespace ByteInsights.Controllers
             _context = context;
         }
 
-        public async Task <IActionResult> Index()
+        public async Task <IActionResult> Index(int? page)
         {
-            var blogs = await _context.Blogs.Include(b => b.BlogUser).ToListAsync();
-            return View(blogs);
+            //var blogs = awo4ait _context.Blogs.Include(b => b.BlogUser).ToListAsync();
+            //return View(blogs);
+
+
+            // X.PageList
+
+            var pageNumber = page ?? 1;
+            var pageSize = 5;
+            //var blogs = _context.Blogs
+            //                    .Where(p => p.Posts.Any(p => p.ReadyStatus == Enums.ReadyStatus.ProductionReady))
+            //                    .OrderByDescending(b => b.Created)
+            //                    .ToPagedListAsync(pageNumber, pageSize);
+
+            var blogs = _context.Blogs
+                                .Include(b => b.BlogUser)
+                                .OrderByDescending(b => b.Created)
+                                .ToPagedListAsync(pageNumber, pageSize);
+
+
+            return View(await blogs);
         }
 
         public IActionResult Contact()
