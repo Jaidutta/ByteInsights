@@ -31,9 +31,10 @@ namespace ByteInsights.Controllers
         // GET: Blogs
         public async Task<IActionResult> Index()
         {
-            var applicationDbContext = _context.Blogs.Include(b => b.BlogUser);
-            return View(await applicationDbContext.ToListAsync());
+            var blogs = await _context.Blogs.Include(b => b.BlogUser).ToListAsync();
+            return View(blogs);
         }
+
 
         // GET: Blogs/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -58,7 +59,7 @@ namespace ByteInsights.Controllers
         [Authorize]
         public IActionResult Create()
         {
-            
+
             return View();
         }
 
@@ -82,7 +83,7 @@ namespace ByteInsights.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            
+
             ViewData["BlogUserId"] = new SelectList(_context.Users, "Id", "Id", blog.BlogUserId);
             return View(blog);
         }
@@ -90,17 +91,18 @@ namespace ByteInsights.Controllers
         // GET: Blogs/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Blogs == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
             var blog = await _context.Blogs.FindAsync(id);
+
             if (blog == null)
             {
                 return NotFound();
             }
-            
+
             return View(blog);
         }
 
@@ -109,7 +111,7 @@ namespace ByteInsights.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Image")] Blog blog, IFormFile newImage)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Blog blog, IFormFile? newImage)
         {
             if (id != blog.Id)
             {
@@ -121,26 +123,24 @@ namespace ByteInsights.Controllers
                 try
                 {
                     var newBlog = await _context.Blogs.FindAsync(blog.Id);
+
                     newBlog.Updated = DateTime.UtcNow;
 
                     if (newBlog.Name != blog.Name)
                     {
                         newBlog.Name = blog.Name;
-                        
                     }
 
                     if (newBlog.Description != blog.Description)
                     {
                         newBlog.Description = blog.Description;
-                        
                     }
 
-                    if(newImage is not null)
+                    if (newImage is not null)
                     {
                         newBlog.ImageData = await _imageService.EncodeImageAsync(newImage);
                     }
 
-                    
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
@@ -156,6 +156,7 @@ namespace ByteInsights.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["BlogUserId"] = new SelectList(_context.Users, "Id", "Id", blog.BlogUserId);
             return View(blog);
         }
@@ -193,14 +194,14 @@ namespace ByteInsights.Controllers
             {
                 _context.Blogs.Remove(blog);
             }
-            
+
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool BlogExists(int id)
         {
-          return (_context.Blogs?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Blogs?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
