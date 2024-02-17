@@ -14,9 +14,14 @@
  @* Used to pass data into _Layout. Another way to pass data other than from the Model *@
 <h1>Index</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
+@if(User.IsInRole("Administrator"))
+{
+    <p>
+        <a asp-action="Create">Create New</a>
+    </p>
+    
+}
+
 <table class="table">
     <thead>
         <tr>
