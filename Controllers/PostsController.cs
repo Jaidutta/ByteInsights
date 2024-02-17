@@ -11,6 +11,8 @@ using ByteInsights.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Hosting;
 using ByteInsights.ViewModels;
+using ByteInsights.Enums;
+using X.PagedList;
 
 namespace ByteInsights.Controllers
 {
@@ -36,14 +38,21 @@ namespace ByteInsights.Controllers
             return View(await applicationDbContext.ToListAsync());
         }
 
-        public async Task<IActionResult> BlogPostIndex(int? id)
+        public async Task<IActionResult> BlogPostIndex(int? id, int? page)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            var posts = _context.Posts.Where(p => p.BlogId == id);
-            return View("Index", posts);
+
+            var pageNumber = page ?? 1;
+            var pageSize = 5;
+            var posts = await _context.Posts
+                       .Where(p => p.BlogId == id)
+                       .OrderByDescending(p => p.Created)
+                       .ToPagedListAsync(pageNumber, pageSize);
+
+            return View(posts);
         }
 
         /*
