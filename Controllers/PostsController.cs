@@ -107,7 +107,7 @@ namespace ByteInsights.Controllers
                 .Include(p => p.BlogUser) // This BlogUser is the Author of the Posts
                 .Include(p => p.Tags)
                 .Include(p => p.Comments)
-                .ThenInclude(c => c.BlogUser)
+                .ThenInclude(c => c.BlogUser) // This BlogUser is the Author of the Comment
                 .Include(p => p.Comments)
                 .ThenInclude(c => c.Moderator)
                 .FirstOrDefaultAsync(m => m.Slug == slug);

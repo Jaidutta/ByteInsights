@@ -1,4 +1,7 @@
-﻿
+﻿@using ByteInsights.Services
+
+@inject IImageService imageService
+
 @using ByteInsights.ViewModels
 @model PostDetailViewModel
 
@@ -41,6 +44,55 @@
 <hr>
 
 @* Comments related to this post *@
+<div>
+     @* Checks if the User is logged-in *@
+    @if(User.Identity.IsAuthenticated)
+    {
+        <form asp-controller="Comments" asp-action="Create" method="post">
+            @* 
+                1 thing we want to embed into the form is the foreign key
+                so that we can point back into the post 
+            *@
+            @Html.Hidden("PostId", Model.Post.Id)
 
+
+            <div class="form-group m-2">
+                <label class="h2 control-label font-weight-bold">Add Comment</label>
+                <textarea name="body" class="form-control" rows="10"></textarea>
+                <button type="submit" class="btn btn-dark w-100 btn-stylish my-2">Submit</button>
+            </div>
+
+
+
+            
+        </form>
+    }
+    else
+    {
+        <a class="btn w-100 btn-sm btn-dark" asp-area="Identity" asp-page="/Account/Login">
+            Login to add comments
+        </a>
+    }
+</div>
 
 @* Display the image of the comments author *@
+
+<br />
+<hr class="card-hr" />
+<br />
+
+<span class="btn btn-stylish btn-dark w-100 mb-2">@Model.Post.Comments.Count COMMENT(S)</span>
+
+@foreach (var comment in Model.Post.Comments)
+{
+    <div class="media media-border p-3 mb-2 bg-light ">
+        <img class="mr-3 mt-3 rounded-pill img-thumbnail" style="width:60px;" src="@imageService.DecodeImage(comment.BlogUser.ImageData, comment.BlogUser.ContentType)" alt="@comment.BlogUser.DisplayName" />
+
+        <div class="media-body">
+            <h4>@comment.BlogUser.FullName</h4>
+            <small><i>Posted on: @comment.Created?.ToString("dd/MM/yyyy")</i></small>
+            <p>@comment.Body</p>
+
+        </div>
+    </div>
+}
